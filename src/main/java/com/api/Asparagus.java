@@ -95,8 +95,10 @@ public class Asparagus {
     public static void main(String[] args) {
 
         BasicConfigurator.configure();
+        com.util.DatabaseInitializer.initializeDatabase();
 
         Switching sw = new Switching();
+
         sw.serviceMapping();
 
         int maxThreads = 100;

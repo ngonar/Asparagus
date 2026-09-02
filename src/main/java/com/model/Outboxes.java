@@ -90,7 +90,7 @@ public class Outboxes implements Serializable {
     private String responseCode;
     
     @OneToOne(optional = false)
-    @JoinColumn(name = "inbox_id", referencedColumnName = "id")
+    @JoinColumn(name = "inbox_id", referencedColumnName = "id", insertable = false, updatable = false)
     private Inboxes inboxes;
 
     public Outboxes() {
