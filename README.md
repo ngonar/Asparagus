@@ -43,10 +43,12 @@ Run the database initialization task to create the `asparagus.db` SQLite databas
 
 ### 3. Run the Application
 
-You can execute the built JAR directly:
+You can execute the built Fat JAR directly:
 ```bash
 java -jar build/libs/Asparagus.jar
 ```
+
+
 Or run via Gradle:
 ```bash
 ./gradlew run
