@@ -172,10 +172,66 @@ public class SwitchPriorityManager {
     }
 
     /**
+     * Helper to read a configuration parameter value from system_settings DB table.
+     */
+    public static String getSettingValue(String parameter, String defaultValue) {
+        EntityManager em = null;
+        try {
+            em = getEmf().createEntityManager();
+            @SuppressWarnings("unchecked")
+            List<model.Settings> list = em.createNamedQuery("Settings.findByParameter")
+                    .setParameter("parameter", parameter)
+                    .getResultList();
+
+            if (list != null && !list.isEmpty() && list.get(0) != null) {
+                String val = list.get(0).getValue();
+                if (val != null && !val.trim().isEmpty()) {
+                    return val.trim();
+                }
+            }
+        } catch (Exception e) {
+            logger.warn("Could not load system setting [" + parameter + "]: " + e.getMessage());
+        } finally {
+            if (em != null && em.isOpen()) {
+                em.close();
+            }
+        }
+        return defaultValue;
+    }
+
+    /**
+     * Checks if a target string matches any token in a comma-separated configuration string.
+     */
+    public static boolean isValueInCommaSeparatedList(String target, String commaSeparatedList) {
+        if (target == null || commaSeparatedList == null) return false;
+        String[] tokens = commaSeparatedList.split(",");
+        for (String token : tokens) {
+            if (target.trim().equalsIgnoreCase(token.trim())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Convenience method to record response based on Response Code (RC) and Status.
+     * Conditions for success and failure are dynamically configurable via parameters
+     * in the system_settings table:
+     * - "success_rc_list": Comma-separated list of RC values indicating success (default: "0000")
+     * - "failure_status_list": Comma-separated list of Status values indicating failure (default: "GAGAL")
      */
     public static void recordResponse(String productCode, String switchName, String rc, String status) {
-        boolean isSuccess = (rc != null && rc.equalsIgnoreCase("0000") && !"GAGAL".equalsIgnoreCase(status));
+        String successRcList = getSettingValue("success_rc_list", "0000");
+        String failureStatusList = getSettingValue("failure_status_list", "GAGAL");
+
+        boolean isRcSuccess = isValueInCommaSeparatedList(rc, successRcList);
+        boolean isStatusFailure = isValueInCommaSeparatedList(status, failureStatusList);
+
+        boolean isSuccess = isRcSuccess && !isStatusFailure;
+        logger.info("Recording response for [" + productCode + "/" + switchName + "] RC=" + rc + ", Status=" + status
+                + " -> evaluated isSuccess=" + isSuccess + " (success_rc_list=" + successRcList
+                + ", failure_status_list=" + failureStatusList + ")");
+
         recordOutcome(productCode, switchName, isSuccess);
     }
 

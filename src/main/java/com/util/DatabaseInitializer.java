@@ -147,7 +147,9 @@ public class DatabaseInitializer {
                     {"port", "1985", "Server listening port"},
                     {"mc_host", "localhost", "Memcached host address"},
                     {"mc_port", "11212", "Memcached port number"},
-                    {"respawn_setting", "60", "Automatic switch priority respawn window in seconds"}
+                    {"respawn_setting", "60", "Automatic switch priority respawn window in seconds"},
+                    {"success_rc_list", "0000,00,0", "Comma-separated Response Codes considered successful"},
+                    {"failure_status_list", "GAGAL,FAILED,ERROR", "Comma-separated Status values considered failure"}
                 };
 
                 long idCounter = 1;

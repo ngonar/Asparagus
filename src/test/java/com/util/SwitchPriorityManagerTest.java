@@ -107,4 +107,55 @@ public class SwitchPriorityManagerTest {
         assertEquals("Failure count should be reset to 0 after respawn", Integer.valueOf(0), priority.getFailureCount());
         assertNull("Disabled timestamp should be cleared after respawn", priority.getDisabledTimestamp());
     }
+
+    @Test
+    public void testConfigurableResponseConditions() {
+        String productCode = "TEST_PLN20_CFG";
+        String switchName = "TEST_SWITCH_CFG";
+
+        // Clean any old test records
+        EntityManager em = SwitchPriorityManager.getEmf().createEntityManager();
+        em.getTransaction().begin();
+        em.createQuery("DELETE FROM ProductSwitchPriorities p WHERE p.productCode = :pc AND p.switchName = :sn")
+                .setParameter("pc", productCode)
+                .setParameter("sn", switchName)
+                .executeUpdate();
+
+        // Ensure custom success RC list in system_settings
+        @SuppressWarnings("unchecked")
+        List<model.Settings> sList = em.createNamedQuery("Settings.findByParameter")
+                .setParameter("parameter", "success_rc_list")
+                .getResultList();
+
+        model.Settings cfgSetting;
+        if (sList != null && !sList.isEmpty()) {
+            cfgSetting = sList.get(0);
+            cfgSetting.setValue("0000,00,OK_CODE");
+            em.merge(cfgSetting);
+        } else {
+            cfgSetting = new model.Settings("success_rc_list", "0000,00,OK_CODE", "Success RCs");
+            cfgSetting.setId(System.currentTimeMillis());
+            em.persist(cfgSetting);
+        }
+        em.getTransaction().commit();
+        em.close();
+
+        // Test custom RC "OK_CODE" with status "BERHASIL" -> evaluated as SUCCESS (failureCount = 0)
+        SwitchPriorityManager.recordResponse(productCode, switchName, "OK_CODE", "BERHASIL");
+        ProductSwitchPriorities priority = findValidPriority(productCode, switchName);
+        assertNotNull(priority);
+        assertEquals(Integer.valueOf(0), priority.getFailureCount());
+
+        // Test RC "UNKNOWN_RC" -> evaluated as FAILURE (failureCount = 1)
+        SwitchPriorityManager.recordResponse(productCode, switchName, "UNKNOWN_RC", "BERHASIL");
+        priority = findValidPriority(productCode, switchName);
+        assertNotNull(priority);
+        assertEquals(Integer.valueOf(1), priority.getFailureCount());
+
+        // Test RC "0000" with status "GAGAL" -> evaluated as FAILURE (failureCount = 2)
+        SwitchPriorityManager.recordResponse(productCode, switchName, "0000", "GAGAL");
+        priority = findValidPriority(productCode, switchName);
+        assertNotNull(priority);
+        assertEquals(Integer.valueOf(2), priority.getFailureCount());
+    }
 }
