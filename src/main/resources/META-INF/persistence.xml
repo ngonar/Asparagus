@@ -13,6 +13,7 @@
         <class>model.Outboxes</class>
         <class>model.ProductCategories</class>
         <class>model.ProductSwitchPriorities</class>
+        <class>model.ProductSupplierConfigurations</class>
         <class>model.Settings</class>
 
         <properties>

@@ -1,6 +1,7 @@
 package com.util;
 
 import model.ProductCategories;
+import model.ProductSupplierConfigurations;
 import model.ProductSwitchPriorities;
 import model.Products;
 import model.Settings;
@@ -45,6 +46,10 @@ public class DatabaseInitializer {
 
             try {
                 em.createNativeQuery("CREATE TABLE IF NOT EXISTS system_settings (id INTEGER PRIMARY KEY AUTOINCREMENT, parameter VARCHAR(255) UNIQUE, value VARCHAR(255), description VARCHAR(255), create_date TIMESTAMP, create_by VARCHAR(255), update_date TIMESTAMP, update_by VARCHAR(255))").executeUpdate();
+            } catch (Exception ignored) {}
+
+            try {
+                em.createNativeQuery("CREATE TABLE IF NOT EXISTS product_supplier_configurations (id INTEGER PRIMARY KEY AUTOINCREMENT, product_code VARCHAR(255), supplier_name VARCHAR(255), host VARCHAR(255), ip VARCHAR(255), port INTEGER, username VARCHAR(255), password VARCHAR(255), api_key VARCHAR(255), secret_key VARCHAR(255), active BOOLEAN DEFAULT 1, create_date TIMESTAMP, create_by VARCHAR(255), update_date TIMESTAMP, update_by VARCHAR(255))").executeUpdate();
             } catch (Exception ignored) {}
 
             // Seed Users if table is empty
@@ -162,7 +167,35 @@ public class DatabaseInitializer {
                 }
             }
 
+            // Seed ProductSupplierConfigurations if table is empty
+            long supplierConfigCount = (Long) em.createQuery("SELECT COUNT(c) FROM ProductSupplierConfigurations c").getSingleResult();
+            if (supplierConfigCount == 0) {
+                logger.info("Seeding initial product supplier configuration data...");
+                ProductSupplierConfigurations cfg1 = new ProductSupplierConfigurations("PLN20", "MAIN_SWITCH", "api.main-supplier.com", "192.168.1.10", 8080);
+                cfg1.setId(1L);
+                cfg1.setUsername("pln_main_user");
+                cfg1.setPassword("pln_main_pass");
+                cfg1.setApiKey("key_main_123");
+                cfg1.setSecretKey("secret_main_abc");
+                cfg1.setActive(true);
+                cfg1.setCreateDate(new Date());
+                cfg1.setCreateBy("SYSTEM");
+                em.persist(cfg1);
+
+                ProductSupplierConfigurations cfg2 = new ProductSupplierConfigurations("PLN20", "BACKUP_SWITCH", "api.backup-supplier.com", "192.168.1.20", 8080);
+                cfg2.setId(2L);
+                cfg2.setUsername("pln_backup_user");
+                cfg2.setPassword("pln_backup_pass");
+                cfg2.setApiKey("key_backup_456");
+                cfg2.setSecretKey("secret_backup_def");
+                cfg2.setActive(true);
+                cfg2.setCreateDate(new Date());
+                cfg2.setCreateBy("SYSTEM");
+                em.persist(cfg2);
+            }
+
             // Ensure no null values exist for active, failureCount, or threshold
+            em.createQuery("DELETE FROM ProductSwitchPriorities p WHERE p.id IS NULL OR p.priority IS NULL").executeUpdate();
             em.createQuery("UPDATE ProductSwitchPriorities p SET p.active = true WHERE p.active IS NULL").executeUpdate();
             em.createQuery("UPDATE ProductSwitchPriorities p SET p.failureCount = 0 WHERE p.failureCount IS NULL").executeUpdate();
             em.createQuery("UPDATE ProductSwitchPriorities p SET p.threshold = 5 WHERE p.threshold IS NULL").executeUpdate();
