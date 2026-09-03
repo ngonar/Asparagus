@@ -24,6 +24,7 @@ import javax.persistence.TemporalType;
     @NamedQuery(name = "ProductSwitchPriorities.findById", query = "SELECT p FROM ProductSwitchPriorities p WHERE p.id = :id"),
     @NamedQuery(name = "ProductSwitchPriorities.findByProductCode", query = "SELECT p FROM ProductSwitchPriorities p WHERE p.productCode = :productCode"),
     @NamedQuery(name = "ProductSwitchPriorities.findBySwitchName", query = "SELECT p FROM ProductSwitchPriorities p WHERE p.switchName = :switchName"),
+    @NamedQuery(name = "ProductSwitchPriorities.findByProductCodeAndSwitchName", query = "SELECT p FROM ProductSwitchPriorities p WHERE p.productCode = :productCode AND p.switchName = :switchName"),
     @NamedQuery(name = "ProductSwitchPriorities.findByActive", query = "SELECT p FROM ProductSwitchPriorities p WHERE p.active = :active")
 })
 public class ProductSwitchPriorities implements Serializable {
@@ -31,8 +32,6 @@ public class ProductSwitchPriorities implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Basic(optional = false)
     @Column(name = "id")
     private Long id;
 
@@ -51,8 +50,18 @@ public class ProductSwitchPriorities implements Serializable {
     @Column(name = "weight")
     private Integer weight;
 
+    @Column(name = "threshold")
+    private Integer threshold = 5;
+
+    @Column(name = "failure_count")
+    private Integer failureCount = 0;
+
+    @Column(name = "disabled_timestamp")
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date disabledTimestamp;
+
     @Column(name = "active")
-    private Boolean active;
+    private Boolean active = true;
 
     @Column(name = "create_date")
     @Temporal(TemporalType.TIMESTAMP)
@@ -130,8 +139,32 @@ public class ProductSwitchPriorities implements Serializable {
         this.weight = weight;
     }
 
+    public Integer getThreshold() {
+        return threshold == null ? 5 : threshold;
+    }
+
+    public void setThreshold(Integer threshold) {
+        this.threshold = threshold;
+    }
+
+    public Integer getFailureCount() {
+        return failureCount == null ? 0 : failureCount;
+    }
+
+    public void setFailureCount(Integer failureCount) {
+        this.failureCount = failureCount;
+    }
+
+    public Date getDisabledTimestamp() {
+        return disabledTimestamp;
+    }
+
+    public void setDisabledTimestamp(Date disabledTimestamp) {
+        this.disabledTimestamp = disabledTimestamp;
+    }
+
     public Boolean getActive() {
-        return active;
+        return active == null ? Boolean.TRUE : active;
     }
 
     public void setActive(Boolean active) {

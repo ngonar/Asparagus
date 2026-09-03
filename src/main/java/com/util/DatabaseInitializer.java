@@ -33,6 +33,15 @@ public class DatabaseInitializer {
 
             em.getTransaction().begin();
 
+            // Native DDL to ensure auto-increment primary key in SQLite
+            try {
+                em.createNativeQuery("CREATE TABLE IF NOT EXISTS product_categories (id INTEGER PRIMARY KEY AUTOINCREMENT, code VARCHAR(255), name VARCHAR(255), description VARCHAR(255), active BOOLEAN DEFAULT 1, create_date TIMESTAMP, create_by VARCHAR(255), update_date TIMESTAMP, update_by VARCHAR(255))").executeUpdate();
+            } catch (Exception ignored) {}
+
+            try {
+                em.createNativeQuery("CREATE TABLE IF NOT EXISTS product_switch_priorities (id INTEGER PRIMARY KEY AUTOINCREMENT, product_id BIGINT, product_code VARCHAR(255), switch_name VARCHAR(255), priority INTEGER, weight INTEGER, threshold INTEGER DEFAULT 5, failure_count INTEGER DEFAULT 0, disabled_timestamp TIMESTAMP, active BOOLEAN DEFAULT 1, create_date TIMESTAMP, create_by VARCHAR(255), update_date TIMESTAMP, update_by VARCHAR(255))").executeUpdate();
+            } catch (Exception ignored) {}
+
             // Seed Users if table is empty
             long userCount = (Long) em.createQuery("SELECT COUNT(u) FROM Users u").getSingleResult();
             if (userCount == 0) {
@@ -99,6 +108,9 @@ public class DatabaseInitializer {
                 ProductSwitchPriorities p1 = new ProductSwitchPriorities("PLN20", "MAIN_SWITCH", 1);
                 p1.setProductId(1L);
                 p1.setWeight(100);
+                p1.setThreshold(3);
+                p1.setFailureCount(0);
+                p1.setActive(true);
                 p1.setCreateDate(new Date());
                 p1.setCreateBy("SYSTEM");
                 em.persist(p1);
@@ -106,10 +118,18 @@ public class DatabaseInitializer {
                 ProductSwitchPriorities p2 = new ProductSwitchPriorities("PLN20", "BACKUP_SWITCH", 2);
                 p2.setProductId(1L);
                 p2.setWeight(50);
+                p2.setThreshold(5);
+                p2.setFailureCount(0);
+                p2.setActive(true);
                 p2.setCreateDate(new Date());
                 p2.setCreateBy("SYSTEM");
                 em.persist(p2);
             }
+
+            // Ensure no null values exist for active, failureCount, or threshold
+            em.createQuery("UPDATE ProductSwitchPriorities p SET p.active = true WHERE p.active IS NULL").executeUpdate();
+            em.createQuery("UPDATE ProductSwitchPriorities p SET p.failureCount = 0 WHERE p.failureCount IS NULL").executeUpdate();
+            em.createQuery("UPDATE ProductSwitchPriorities p SET p.threshold = 5 WHERE p.threshold IS NULL").executeUpdate();
 
             em.getTransaction().commit();
             logger.info("SQLite database initialization completed successfully.");

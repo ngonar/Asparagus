@@ -44,8 +44,14 @@ public class Asparagus {
     private static MemcachedClient mc = null;
     public static Map mpx = new HashMap();
 
-    public Asparagus() {
-        
+    private static int respawnSetting = 60;
+
+    public static int getRespawnSetting() {
+        return respawnSetting;
+    }
+
+    public static void setRespawnSetting(int val) {
+        respawnSetting = val;
     }
 
     public static void loadUserConfig(String host, int port) {
@@ -133,6 +139,8 @@ public class Asparagus {
             logger.info("MC Host       : " + settingx.getMcHost());
             mc_port = settingx.getMcPort();
             logger.info("MC Port       : " + settingx.getMcPort());
+            respawnSetting = settingx.getRespawnSetting();
+            logger.info("Respawn Setting : " + respawnSetting + " seconds");
 
             port(port);
 //            secure(settingx.getKeystore_filepath(), settingx.getKeystore_password(), settingx.getTruststore_filepath(), settingx.getTruststore_password());
