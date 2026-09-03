@@ -3,6 +3,7 @@ package com.util;
 import model.ProductCategories;
 import model.ProductSwitchPriorities;
 import model.Products;
+import model.Settings;
 import model.Users;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
@@ -42,6 +43,10 @@ public class DatabaseInitializer {
                 em.createNativeQuery("CREATE TABLE IF NOT EXISTS product_switch_priorities (id INTEGER PRIMARY KEY AUTOINCREMENT, product_id BIGINT, product_code VARCHAR(255), switch_name VARCHAR(255), priority INTEGER, weight INTEGER, threshold INTEGER DEFAULT 5, failure_count INTEGER DEFAULT 0, disabled_timestamp TIMESTAMP, active BOOLEAN DEFAULT 1, create_date TIMESTAMP, create_by VARCHAR(255), update_date TIMESTAMP, update_by VARCHAR(255))").executeUpdate();
             } catch (Exception ignored) {}
 
+            try {
+                em.createNativeQuery("CREATE TABLE IF NOT EXISTS system_settings (id INTEGER PRIMARY KEY AUTOINCREMENT, parameter VARCHAR(255) UNIQUE, value VARCHAR(255), description VARCHAR(255), create_date TIMESTAMP, create_by VARCHAR(255), update_date TIMESTAMP, update_by VARCHAR(255))").executeUpdate();
+            } catch (Exception ignored) {}
+
             // Seed Users if table is empty
             long userCount = (Long) em.createQuery("SELECT COUNT(u) FROM Users u").getSingleResult();
             if (userCount == 0) {
@@ -64,12 +69,14 @@ public class DatabaseInitializer {
             if (categoryCount == 0) {
                 logger.info("Seeding initial product category data...");
                 ProductCategories plnCat = new ProductCategories("PLN", "Electricity PLN");
+                plnCat.setId(1L);
                 plnCat.setDescription("PLN Prepaid Token & Postpaid Services");
                 plnCat.setCreateDate(new Date());
                 plnCat.setCreateBy("SYSTEM");
                 em.persist(plnCat);
 
                 ProductCategories pulsaCat = new ProductCategories("PULSA", "Cellular Credit");
+                pulsaCat.setId(2L);
                 pulsaCat.setDescription("Mobile Top-Up & Data Packages");
                 pulsaCat.setCreateDate(new Date());
                 pulsaCat.setCreateBy("SYSTEM");
@@ -106,6 +113,7 @@ public class DatabaseInitializer {
             if (switchPriorityCount == 0) {
                 logger.info("Seeding initial product switch priority data...");
                 ProductSwitchPriorities p1 = new ProductSwitchPriorities("PLN20", "MAIN_SWITCH", 1);
+                p1.setId(1L);
                 p1.setProductId(1L);
                 p1.setWeight(100);
                 p1.setThreshold(3);
@@ -116,6 +124,7 @@ public class DatabaseInitializer {
                 em.persist(p1);
 
                 ProductSwitchPriorities p2 = new ProductSwitchPriorities("PLN20", "BACKUP_SWITCH", 2);
+                p2.setId(2L);
                 p2.setProductId(1L);
                 p2.setWeight(50);
                 p2.setThreshold(5);
@@ -124,6 +133,31 @@ public class DatabaseInitializer {
                 p2.setCreateDate(new Date());
                 p2.setCreateBy("SYSTEM");
                 em.persist(p2);
+            }
+
+            // Seed Settings if table is empty
+            long settingsCount = (Long) em.createQuery("SELECT COUNT(s) FROM Settings s").getSingleResult();
+            if (settingsCount == 0) {
+                logger.info("Seeding initial configuration settings data...");
+                String[][] initialConfigs = {
+                    {"minthread", "50", "Minimum thread count for server pool"},
+                    {"maxthread", "200", "Maximum thread count for server pool"},
+                    {"timeoutmilis", "3000", "HTTP request timeout in milliseconds"},
+                    {"salt", "xxxxxx", "Security salt string"},
+                    {"port", "1985", "Server listening port"},
+                    {"mc_host", "localhost", "Memcached host address"},
+                    {"mc_port", "11212", "Memcached port number"},
+                    {"respawn_setting", "60", "Automatic switch priority respawn window in seconds"}
+                };
+
+                long idCounter = 1;
+                for (String[] cfg : initialConfigs) {
+                    Settings setting = new Settings(cfg[0], cfg[1], cfg[2]);
+                    setting.setId(idCounter++);
+                    setting.setCreateDate(new Date());
+                    setting.setCreateBy("SYSTEM");
+                    em.persist(setting);
+                }
             }
 
             // Ensure no null values exist for active, failureCount, or threshold
