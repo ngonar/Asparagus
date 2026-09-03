@@ -1,5 +1,7 @@
 package com.util;
 
+import model.ProductCategories;
+import model.ProductSwitchPriorities;
 import model.Products;
 import model.Users;
 import org.apache.log4j.BasicConfigurator;
@@ -8,6 +10,7 @@ import org.apache.log4j.Logger;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
+import java.util.Date;
 
 public class DatabaseInitializer {
 
@@ -47,6 +50,23 @@ public class DatabaseInitializer {
                 em.persist(admin);
             }
 
+            // Seed ProductCategories if table is empty
+            long categoryCount = (Long) em.createQuery("SELECT COUNT(c) FROM ProductCategories c").getSingleResult();
+            if (categoryCount == 0) {
+                logger.info("Seeding initial product category data...");
+                ProductCategories plnCat = new ProductCategories("PLN", "Electricity PLN");
+                plnCat.setDescription("PLN Prepaid Token & Postpaid Services");
+                plnCat.setCreateDate(new Date());
+                plnCat.setCreateBy("SYSTEM");
+                em.persist(plnCat);
+
+                ProductCategories pulsaCat = new ProductCategories("PULSA", "Cellular Credit");
+                pulsaCat.setDescription("Mobile Top-Up & Data Packages");
+                pulsaCat.setCreateDate(new Date());
+                pulsaCat.setCreateBy("SYSTEM");
+                em.persist(pulsaCat);
+            }
+
             // Seed Products if table is empty
             long productCount = (Long) em.createQuery("SELECT COUNT(p) FROM Products p").getSingleResult();
             if (productCount == 0) {
@@ -70,6 +90,25 @@ public class DatabaseInitializer {
                 pln50.setActive(true);
                 pln50.setProductCategoryId(1);
                 em.persist(pln50);
+            }
+
+            // Seed ProductSwitchPriorities if table is empty
+            long switchPriorityCount = (Long) em.createQuery("SELECT COUNT(s) FROM ProductSwitchPriorities s").getSingleResult();
+            if (switchPriorityCount == 0) {
+                logger.info("Seeding initial product switch priority data...");
+                ProductSwitchPriorities p1 = new ProductSwitchPriorities("PLN20", "MAIN_SWITCH", 1);
+                p1.setProductId(1L);
+                p1.setWeight(100);
+                p1.setCreateDate(new Date());
+                p1.setCreateBy("SYSTEM");
+                em.persist(p1);
+
+                ProductSwitchPriorities p2 = new ProductSwitchPriorities("PLN20", "BACKUP_SWITCH", 2);
+                p2.setProductId(1L);
+                p2.setWeight(50);
+                p2.setCreateDate(new Date());
+                p2.setCreateBy("SYSTEM");
+                em.persist(p2);
             }
 
             em.getTransaction().commit();

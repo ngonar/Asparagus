@@ -11,6 +11,8 @@
         <class>model.Products</class>
         <class>model.Inboxes</class>
         <class>model.Outboxes</class>
+        <class>model.ProductCategories</class>
+        <class>model.ProductSwitchPriorities</class>
 
         <properties>
             <!-- Database Connection Settings -->
