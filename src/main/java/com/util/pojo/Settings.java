@@ -117,9 +117,20 @@ public class Settings {
             return mc_port;
     }
 
+    int respawn_setting = 60;
+
     @XmlElement(name="mc_port")
     public void setMcPort(int mc_port) {
             this.mc_port = mc_port;
+    }
+
+    public int getRespawnSetting() {
+            return respawn_setting;
+    }
+
+    @XmlElement(name="respawn_setting")
+    public void setRespawnSetting(int respawn_setting) {
+            this.respawn_setting = respawn_setting;
     }
     
 }

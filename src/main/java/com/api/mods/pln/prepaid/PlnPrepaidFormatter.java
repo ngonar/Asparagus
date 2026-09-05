@@ -61,6 +61,7 @@ public class PlnPrepaidFormatter {
             //isi data respon
             Object obj = null;
             if (rc.equalsIgnoreCase("0000")) {
+                com.util.SwitchPriorityManager.recordOutcome("PLN20", "MAIN_SWITCH", true);
                 TransactionsResponsePrepaid trx_respon = new TransactionsResponsePrepaid();
                 DataPrepaid dtx = new DataPrepaid();
                 TrxPlnPrepaid trxs = new TrxPlnPrepaid();
@@ -125,6 +126,7 @@ public class PlnPrepaidFormatter {
                 }
             }
             else {
+                com.util.SwitchPriorityManager.recordOutcome("PLN20", "MAIN_SWITCH", false);
                 TransactionsResponseGagal trx_respon = new TransactionsResponseGagal();
                 DataGagal dtx = new DataGagal();
                 TrxGagal trxs = new TrxGagal();
@@ -196,6 +198,7 @@ public class PlnPrepaidFormatter {
             //isi data respon
             Object obj = null;
             if (rc.equalsIgnoreCase("0000")) {
+                com.util.SwitchPriorityManager.recordOutcome("PLN20", "MAIN_SWITCH", true);
                 TransactionsResponsePrepaidPurchase trx_respon = new TransactionsResponsePrepaidPurchase();
                 DataPrepaidPurchase dtx = new DataPrepaidPurchase();
                 TrxPlnPrepaidPurchase trxs = new TrxPlnPrepaidPurchase();
@@ -291,6 +294,7 @@ public class PlnPrepaidFormatter {
                 }
             }
             else {
+                com.util.SwitchPriorityManager.recordOutcome("PLN20", "MAIN_SWITCH", false);
                 TransactionsResponseGagal trx_respon = new TransactionsResponseGagal();
                 DataGagal dtx = new DataGagal();
                 TrxGagal trxs = new TrxGagal();

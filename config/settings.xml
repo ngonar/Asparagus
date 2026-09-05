@@ -7,4 +7,5 @@
     <port>1985</port>
     <mc_host>localhost</mc_host>
     <mc_port>11212</mc_port>
+    <respawn_setting>60</respawn_setting>
 </application>
